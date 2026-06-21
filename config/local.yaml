@@ -1,0 +1,6 @@
+# Add this file to .gitignore if there's any secret keys here 
+
+env: "dev"
+storage_path: "storage/storage.db"
+http_server:
+  address: "localhost:8000"
