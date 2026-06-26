@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,22 +12,33 @@ import (
 	"time"
 
 	"github.com/aman-void/go-http-server/internal/config"
+	"github.com/aman-void/go-http-server/internal/http/handlers/user"
+	"github.com/aman-void/go-http-server/internal/storage/sqlite"
 )
 
 func main() {
 
 	// Load application configuration
 	cfg := config.MustLoad()
+	slog.Info("configuration loaded")
 
 	// setup database connections
+	storage, err := sqlite.New(*cfg)
+	if err != nil {
+		log.Fatalf("error in initializing storage. error: %s", err.Error())
+	}
+
+	slog.Info(
+		"storage initialized",
+		slog.String("env", cfg.Env),
+		slog.String("version", "1.0.0"),
+	)
 
 	// Register HTTP routes.
 	router := http.NewServeMux()
 	router.HandleFunc(
-		"GET /",
-		func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte("Hello from the GO http server"))
-		},
+		"POST /api/users",
+		user.New(storage),
 	)
 
 	// create the HTTP server
