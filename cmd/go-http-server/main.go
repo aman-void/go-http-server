@@ -36,10 +36,9 @@ func main() {
 
 	// Register HTTP routes.
 	router := http.NewServeMux()
-	router.HandleFunc(
-		"POST /api/users",
-		user.New(storage),
-	)
+	router.HandleFunc("POST /api/users", user.New(storage))
+	router.HandleFunc("GET /api/users/{id}", user.GetById(storage))
+	router.HandleFunc("GET /api/users", user.GetList(storage))
 
 	// create the HTTP server
 	server := http.Server{

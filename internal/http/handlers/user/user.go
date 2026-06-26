@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/aman-void/go-http-server/internal/storage"
 	"github.com/aman-void/go-http-server/internal/types"
@@ -115,5 +116,60 @@ func New(storage storage.Storage) http.HandlerFunc {
 			),
 		)
 
+	}
+}
+
+func GetById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		slog.Info("getting a user: ", slog.String("id", id))
+
+		parsedId, err := strconv.Atoi(id)
+		if err != nil {
+			response.WriteJson(
+				w,
+				http.StatusBadRequest,
+				response.NewError(err),
+			)
+			return
+		}
+
+		user, err := storage.GetUserById(int64(parsedId))
+		if err != nil {
+			response.WriteJson(
+				w,
+				http.StatusInternalServerError,
+				response.NewError(err),
+			)
+			return
+		}
+
+		response.WriteJson(
+			w,
+			http.StatusOK,
+			response.NewSuccess("user retrieved successfully", user),
+		)
+	}
+}
+
+func GetList(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		users, err := storage.GetUsers()
+
+		if err != nil {
+			response.WriteJson(
+				w,
+				http.StatusInternalServerError,
+				err,
+			)
+			return
+		}
+
+		response.WriteJson(
+			w,
+			http.StatusOK,
+			users,
+		)
 	}
 }
